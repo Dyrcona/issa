@@ -1,0 +1,110 @@
+﻿This document describes the menu and prompt system for issa, the URSA/Evergreen integration program. The program operates on standard input and standard output with a simple menu and prompt-driven interface that should be easy to automate with expect or a similar program.
+
+One general assumption of the program is that entering a single letter Q (either upper or lower case) at any prompt other than a title or name prompt will reset the program state and return to the main menu. Entering a single letter Q at the main menu prompt will log out of Evergreen and shut the program down.
+
+The following section represents the menus and prompts in a stylized manner that we hop is easy to follow.
+
+Main Menu
+1. Retrieve Patron
+2. Retrieve Bibliographic ID
+3. Place Hold
+4. Checkout Copy
+5. Checkin Copy
+6. Create Temporary Copy
+7. Delete Temporary Copy
+Q. Quit
+Enter Choice [1-7,Q]>
+
+***
+
+Retrieve Patron
+Enter Barcode>
+
+===
+
+Prints the following on success:
+
+Name: Patron First Name Patron Middle Name (if any) Patron Last Name
+Email: Patron Email address or N/A
+Home Library: Library Name (Library Code)
+Active Cards: Space-delimited list of patron cards (first is the main card)
+Expiration Date: Date in ISO format or N/A if the patron does not expire
+Status: One of Active, Juvenile, Inactive, or Barred or a list of standing penalties. (Active or Juvenile should be considered OK, any other response indicates the patron's privileges are blocked for some reason.)
+
+Prints a single error code on failure. The most common results would be:
+PATRON_DELETED or PATRON_NOT_FOUND
+
+***
+
+Retrieve Bibliographic ID
+Enter Copy Barcode>
+
+===
+
+Prints the database id# of the bibliographic record to which the barcode is attached on success.
+
+Prints a textual error message on failure, such as COPY_BARCODE_NOT_FOUND.
+
+***
+
+Place Hold
+Choose Target Identifier
+1. Bibliographic Record ID
+2. Copy Barcode
+Enter Choice [1-2]>
+
+Enter ID>
+or
+Enter Barcode>
+
+Enter Patron Barcode>
+
+Enter Pickup Library>
+===
+
+Expects Pickup Library to be a short code for the location from the target ILS. In the case of requests going to virtual catalog libraries outside the consortium, a location will be set up for that purpose.
+
+Prints SUCCESS if the hold was successfully placed. Prints a text code representing the reason for failure if the hold could not be placed.
+
+***
+
+Checkout Copy
+Enter Patron Barcode>
+
+Enter Copy Barcode>
+
+===
+
+Prints SUCCESS if the checkout was successful. Prints a text code representing the reason for failure if the checkout failed.
+
+***
+
+Checkin Copy
+Enter Copy Barcode>
+
+===
+
+Prints SUCCESS if the checkin was successful. Prints COPY_NOT_CHECKED_OUT if for some reason the chckin is not permitted. (The program checks to see if the copy is actually checked out to a virtual catalog patron. If not, it tells you it is not checked out, even if checked out to another patron.)
+
+***
+
+Create Temporary Copy
+Enter Title>
+
+Enter Call Number>
+
+Enter Barcode>
+
+===
+
+Prints SUCCESS if the operation succeeded. Prints a text code representing the reason for failure if the operation failed.
+
+***
+
+Delete Temporary Copy
+Enter Barcode>
+
+===
+
+Prints SUCCESS if the operation succeeded. Prints a text code representing the reason for failure if the operation failed.
+

@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Configuration for the URSA integration application -->
+<issa>
+  <!-- Information needed to authenticate with Evergreen -->
+  <credentials>
+    <!-- URSA staff account -->
+    <username></username>
+    <!-- Password for the above -->
+    <password></password>
+    <!-- Virtual Catalog organizational unit shortname -->
+    <work_ou></work_ou>
+    <!-- Workstation registered for the URSA staff account -->
+    <workstation></workstation>
+  </credentials>
+  <!-- Path to opensrf_core.xml bootstrap configuration -->
+  <bootstrap_config></bootstrap_config>
+  <!-- name of the config.bib_source entry to use when creating MARC Records -->
+  <config_bib_source>Local System</config_bib_source>
+  <!-- Configurable options for created copies. -->
+  <copy>
+    <!-- Add a stat_cat_entry element for each stat cat that you wish
+         to fill in when creating copies. If you aren't using
+         stat_cats or if you don't wish to create any for these, you
+         don't need to have stat_cat_entry elements. You could delete
+         the dummy entry in this case.
+
+	 The stat_cat attribute is the numeric id of the stat_cat for
+	 the entry.
+
+	 The required attribute indicates if the stat_cat is required
+	 for saving a copy. If the stat_cat is not required, you can
+	 delete this attribute or set its value to 0.
+
+	 The element's text node is used as the asset.stat_cat_entry's
+	 value in the database.
+    -->
+    <stat_cat_entry stat_cat="" required="1"></stat_cat_entry>
+  </copy>
+  <!-- You can add custom prompt messages in a <prompts> block.
+       
+       Each prompt can be defined with a cusom tag named for the
+       prompt key in the %prompts hash in issa.pl. The prompt text, if
+       different from the default, can go in a prompt tag. The regex,
+       if different from the default, can go in a regex tag. The
+       message goes in a message tag.
+
+       You want to make certain that your regex allows a single letter
+       Q (either upper or lower case) or there may be no escape from
+       the program.
+
+       Here's an example for the patron barcode prompt that changes
+       all parts of the entry:
+
+       <prompts>
+       <patron>
+       <prompt>Patron Barcode:</prompt>
+       <regex>^(?:2\d{13}|[Qq])$</regex>
+       <message>A patron barcode must be 14 digits and begin with a 2.</message>
+       </patron>
+       </prompts>
+
+       You can have multiple prompts blocks or put all the custom
+       prompt tags in a single block.
+
+       It doesn't make sense to configure a custom prompt more than
+       once, but if you do, the one that appears last in the file will
+       take precedence over all previous ones.
+  -->
+</issa>
