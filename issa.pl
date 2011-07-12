@@ -92,8 +92,8 @@ if (defined($session{authtoken})) {
             print("\n");
 
             my $pid = user_id_from_barcode($p);
-            if (ref($pid) && reftype($pid) eq 'HASH') {
-                printf("%s\n\n", $pid->{textcode});
+            if (!defined($pid) || (ref($pid) && reftype($pid) eq 'HASH')) {
+                print("PATRON_NOT_FOUND\n\n");
                 next;
             }
 
@@ -189,12 +189,8 @@ if (defined($session{authtoken})) {
             next if ($pcode =~ /^[qQ]$/);
 
             my $pid = user_id_from_barcode($pcode);
-            if (!defined($pid)) {
+            if (!defined($pid) || (ref($pid) && reftype($pid) eq 'HASH')) {
                 print("\nPATRON_NOT_FOUND\n\n");
-                next;
-            }
-            elsif (ref($pid) && reftype($pid) eq 'HASH') {
-                printf("\n%s\n\n", $pid->{textcode});
                 next;
             }
             my $patron = flesh_user($pid);
