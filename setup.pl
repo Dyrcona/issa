@@ -390,6 +390,7 @@ sub create_profile_group {
 
     # Create the group:
     $grp = Fieldmapper::permission::grp_tree->new;
+    $grp->parent(1);
     $grp->name($name);
     $grp->usergroup('t');
     $grp->perm_interval('10 years');
