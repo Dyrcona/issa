@@ -419,6 +419,7 @@ sub create_profile_group {
                           ['CREATE_VOLUME', $aout->depth],
                           ['DELETE_COPY', $aout->depth],
                           ['DELETE_VOLUME', $aout->depth],
+                          ['HOLD_EXISTS.override', 0],
                           ['IMPORT_MARC', 0],
                           ['PATRON_EXCEEDS_CHECKOUT_COUNT.override', 0],
                           ['PATRON_EXCEEDS_OVERDUE_COUNT.override', 0],
