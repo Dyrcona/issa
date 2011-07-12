@@ -419,6 +419,7 @@ sub create_profile_group {
                           ['CREATE_VOLUME', $aout->depth],
                           ['DELETE_COPY', $aout->depth],
                           ['DELETE_VOLUME', $aout->depth],
+                          ['IMPORT_MARC', 0],
                           ['PATRON_EXCEEDS_CHECKOUT_COUNT.override', 0],
                           ['PATRON_EXCEEDS_OVERDUE_COUNT.override', 0],
                           ['PATRON_EXCEEDS_FINES.override', 0],
@@ -427,7 +428,7 @@ sub create_profile_group {
                           ['TITLE_HOLDS', 0],
                           ['UPDATE_COPY', $aout->depth],
                           ['UPDATE_VOLUME', $aout->depth],
-                          ['UPDATE_MARC', $aout->depth],
+                          ['UPDATE_MARC', 0],
                           ['VIEW_USER', 0],
                          );
     # Create permission.grp_perm_map entries:
