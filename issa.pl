@@ -645,7 +645,19 @@ sub place_hold
     my $r = OpenSRF::AppSession->create('open-ils.circ')
         ->request('open-ils.circ.holds.create.override', $session{authtoken}, $ahr)
         ->gather(1);
-    return $r->{textcode} if (ref($r));
+
+    # If we failed placing a copy hold, try again as a title hold.
+    if (ref($r) eq 'HASH' && $r->{textcode} eq 'PERM_FAILURE' && $type eq 'C') {
+        my $bre = bre_from_barcode($copy->barcode);
+        $ahr->hold_type('T');
+        $ahr->target($bre);
+        $ahr->current_copy(undef);
+        $r = OpenSRF::AppSession->create('open-ils.circ')
+            ->request('open-ils.circ.holds.create.override', $session{authtoken}, $ahr)
+                ->gather(1);
+    }
+
+    return $r->{textcode} if (ref($r) eq 'HASH');
     return "SUCCESS";
 }
 
