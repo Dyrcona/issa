@@ -1,0 +1,217 @@
+README for issa
+===============
+
+Overview
+--------
+
+issa is a small command-line client to OpenILS/Evergreen.  It is
+intended to be run via expect and to serve as a connection program
+between the Evergreen ILS and SirsiDynix's URSA 2.6 ILL software.
+Other uses for this program may exist, but it was originally developed
+to fill a certain role.
+
+Installling Prerequisites
+-------------------------
+
+issa requires that the OpenSRF and OpenILS perlmods are properly
+installed on the computer from which it will run.  This means that it
+is best installed on your main Evergreen server, a utility server, or
+on one of your Evergreen bricks.  If not, you will need to properly
+install and configure both OpenSRF and the OpenILS Perl modules before
+installing issa.
+
+issa and the setup program also use the following Perl modules:
+
+Digest::MD5
+File::Basename
+MARC::Field
+MARC::File::XML
+MARC::Record
+POSIX
+Scalar::Util
+XML::XPath
+
+Most of these either come with Perl or are installed as prerequisites
+of installing OpenSRF and/or OpenILS.  One way to check if you need to
+install a Perl module is to run the following on the command line
+where MODULE::NAME is the name of the module you wisht to test:
+
+perl -MMODULE::NAME -e exit
+
+If the above prints a message about not finding the module, then you
+know that you need to install it.
+
+How to actually install any of the above is beyond the scope of this
+document.
+
+Installation Instructions
+-------------------------
+
+issa is a Perl program.  Once the prerequisites are installed,
+installing issa is as simple as copying issa.pl to an appropriate
+directory on your server.  I would recommend something already in the
+executable PATH or /openils/bin, if you have the latter.
+
+After copying issa.pl, you will want to make sure that it is
+executable.  If you have installed it in /openils/bin, the following
+command will suffice:
+
+chmod +x /openils/bin/issa.pl
+
+Configuration & Setup
+---------------------
+
+Since issa must interact with your OpenILS system, some additional
+setup is required.  You will need to create or select an organization
+unit, a new permission group, and users for issa to use.  The
+issa.xml.example file will need to be edited and installed to
+/openils/conf/issa.xml.  Finally, you will need to setup an account on
+the host system for the URSA remote user to login and run issa.
+
+setup.pl:
+
+To start things off, a program called setup.pl is included with issa.
+This program will help you with some of the more complicated
+configuration steps.  It is used to setup the necessary organizational
+units, create the new permission group required for the issa "staff"
+user, and to register a workstation for that user.
+
+When you run setup.pl, it will first prompt you for the full path to
+your OpenSRF bootstrap configuration file.  In a typical installation,
+this is /openils/conf/opensrf_core.xml.
+
+Next, setup.pl prompts for a user name and password to login to your
+OpenILS/Evergreen system.  This user must have administrator rights
+for the entire consortium and be able to create new organizational
+units, permission groups, and workstations.
+
+After a successful login, you will be asked if you wish to select an
+existing organizational unit to use for issa's working org. unit or to
+create a new one.  If you have an existing organizational unit setup
+for virtual catalog use, perhaps migrated from a previous ILS, then
+you can enter 1 and then enter the shortname of the org. unit.
+Otherwise, enter 2 and you will be prompted to create a new unit and
+its parents.
+
+When creating a new org. unit, you will first be prompted to choose an
+appropriate type for the unit.  The list will be limited to those
+types that can have users and volumes, since the virtual catalog will
+need to have both in the system in order to function properly.
+
+If the chosen type of unit requires a parent unit, then you will be
+prompted to create or select an existing org. unit as this new unit's
+parent.  This process will continue until you have selected an
+existing org. unit or you reach the root of the oranizational tree.
+
+Once the above process reaches its conclusion, you will be prompted to
+enter a shortname and name for each new org. unit in the reverse order
+that you were prompted for their types.  The new org. units will be
+created and added to the hierarchy after each name is entered.  The
+program will die with an error if the OpenILS/OpenSRF system returns
+an error during this process.  You must have valid organization units
+in order to proceed.
+
+Following the successful creation or selection of an appropriate
+organizational unit, setup.pl will prompt you for the name to use in
+setting up a new permission group to use for the issa administrative
+user.  It is recommended that you not skip this step.  It creates a
+new permission, group_application.user.issa, to control who is able to
+add or remove users from this group.  It also creates the new group
+with a set of default permissions deemed appropriate for normal
+virtual catalog use.  If you find that you need to add or alter the
+permissions granted later, fee free to do so from within the Evergreen
+staff client.  Even if you already have a virtual catalog staff
+account migrated from another system or set up in advance, it is
+recommended that you set this user's profile group to be that of the
+new group created by setup.pl.
+
+Finally, setup.pl prompts you to register a new workstation for the
+issa administrative user.  Again, it is recommended that you not skip
+this step, and that you make a note of the full workstation name
+printed by setup.pl after registration.  You will need this name later
+when configuring issa.xml.
+
+Creating Evergreen Users:
+
+You will need to create users in the Evergreen ILS staff client.  You
+will need 1 administrative/staff account and 1 patron at a minimum.
+If you have these users in the system already, perhaps as a result of
+a migration from another ILS, you will need to find those accounts and
+edit them as appropriate.  Specifically, the patron accounts need
+their home library set to the organizational unit that is being used
+for the virtual catalog.  In addition to the previous, the
+administrative/staff account needs it profile group set to the one
+created during the setup.pl run and needs its working organization set
+to the same as its home library.
+
+When creating these users, following the guidelines for modifying
+existing users in the paragraph above.  Make a note of the
+administrative user's username and password.  You will need these when
+editing the issa.xml configuration file.
+
+Configuring Circulation and Hold Rules:
+
+You will need to configure what circulation and hold rules make sense
+for your ILL policies.  These will need to be configured so that they
+affect the organizational unit used by issa for placing holds and
+doing circulation.
+
+Configuring issa.xml:
+
+You will want to edit issa.xml.example and save a copy in a location
+that makes sense on your system.  By default, issa.pl will look for it
+in /openils/conf/issa.xml.  If you store it somewhere else, you will
+need to pass the path to this file as a command line argument when you
+start issa.pl:
+
+issa.pl -config /path/to/issa.xml
+
+The configuration file is a fairly straightforward xml file with many
+descriptive comments.  Basically, you want to input the Evergreen ILS
+credentials for your staff user in the credentials section, so that
+issa.pl can login automatically.  You will also need to enter the path
+to your OpenSRF bootstrap configuration file in the bootstrap_config
+element.  If you want to change the source used when creating
+bibliographic entries for copies added via issa, you can edit the
+config_bib_source element.  Finally, the comments explain how you can
+modify the prompts that issa displays and how you can configure
+statisticat category entries to be used by any copies created via
+issa.  If you're not assigning stat. cat. entries to these copies, you
+should comment out or remove the incomplete entry in this section.
+
+Adding a Linux User Account:
+
+In order to use issa, the virtual catalog vendor will need an account
+on the server where issa is installed.  You have two basically two
+options here.  One is to use an existing account, opensrf for
+instance.  The second is to create a new account.  Using the account
+that owns your OpenILS installation on the system is perhaps the
+easier of the two.  However, creating a new account gives you slightly
+more control over the user.
+
+When creating a new user, you will need to add this user to the group
+that owns your OpenILS installation.  (Normally, this is the opensrf
+group.)  In addition, you will need to alter the permissions on the
+OpenILS log directory (/openils/var/log) so that the group is able to
+write the directory as well as its files.  This latter step allows the
+OpenILS/OpenSRF system to log its various transactions from issa.  You
+will possibly also want/need to edit the umask used by the opensrf
+user, as well as the new user being created for use with issa, to be
+002.  This umask ensures that any files created by the user are also
+writeable by other group members.
+
+Using SSH keys:
+
+A final note on setting up the Linux account is a suggestion to use
+ssh with public/private key pairs for login.  For improved security,
+you can disable password logins to your server and require that all
+users use a public/private key pair.  (SirsiDynix, the most likely
+vendor for the virtual catalog software, is fully capable of using a
+public/private key pair for login.)  Among the advantages of using
+keys for login instead of passwords is that your system becomes
+impervious to brute force password guessing attacks.  Additionally,
+you can control what software a given key is allowed to run.  For
+instance, by adding "command=/openils/bin/issa.pl" before the remote
+user's public key in the user's .ssh/authorized_keys file, you can
+restrict the user to running only issa.pl.  This is one way to make
+issa.pl start on login and to log the user out when they quit issa.pl.
