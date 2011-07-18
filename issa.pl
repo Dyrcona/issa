@@ -648,7 +648,7 @@ sub place_hold
 
     # If we failed placing a copy hold, try again as a title hold.
     if (ref($r) eq 'HASH' && $r->{textcode} eq 'PERM_FAILURE' && $type eq 'C') {
-        my $bre = bre_from_barcode($copy->barcode);
+        my $bre = bre_from_barcode($target->barcode);
         $ahr->hold_type('T');
         $ahr->target($bre);
         $ahr->current_copy(undef);
