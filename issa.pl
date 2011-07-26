@@ -623,8 +623,19 @@ sub place_hold
     my $ahr = Fieldmapper::action::hold_request->new;
     $ahr->hold_type($type);
     if ($type eq 'C') {
-        $ahr->target($target->id);
-        $ahr->current_copy($target->id);
+        # Check if we own the copy.
+        my $ou = org_unit_from_shortname($work_ou); # $work_ou is global
+        if ($ou->id == $target->circ_lib) {
+            # We own it, so let's place a copy hold.
+            $ahr->target($target->id);
+            $ahr->current_copy($target->id);
+        }
+        else {
+            # We don't own it, so let's place a title hold instead.
+            my $bib = bre_from_barcode($target->barcode);
+            $ahr->target($bib->id);
+            $ahr->hold_type('T');
+        }
     }
     elsif ($type eq 'T') {
         $ahr->target($target);
@@ -645,17 +656,6 @@ sub place_hold
     my $r = OpenSRF::AppSession->create('open-ils.circ')
         ->request('open-ils.circ.holds.create.override', $session{authtoken}, $ahr)
         ->gather(1);
-
-    # If we failed placing a copy hold, try again as a title hold.
-    if (ref($r) eq 'HASH' && $r->{textcode} eq 'PERM_FAILURE' && $type eq 'C') {
-        my $bre = bre_from_barcode($target->barcode);
-        $ahr->hold_type('T');
-        $ahr->target($bre);
-        $ahr->current_copy(undef);
-        $r = OpenSRF::AppSession->create('open-ils.circ')
-            ->request('open-ils.circ.holds.create.override', $session{authtoken}, $ahr)
-                ->gather(1);
-    }
 
     return $r->{textcode} if (ref($r) eq 'HASH');
     return "SUCCESS";
