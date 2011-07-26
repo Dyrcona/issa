@@ -409,7 +409,7 @@ sub create_profile_group {
                           ['COPY_ALERT_MESSAGE.override', 0],
                           ['COPY_CHECKIN', $aout->depth],
                           ['COPY_CHECKOUT', $aout->depth],
-                          ['COPY_HOLDS', $aout->depth],
+                          ['COPY_HOLDS', 0],
                           ['COPY_TRANSIT_RECEIVE', $aout->depth],
                           ['CREATE_COPY', $aout->depth],
                           ['CREATE_COPY_STAT_CAT_ENTRY', $aout->depth],
@@ -430,6 +430,7 @@ sub create_profile_group {
                           ['UPDATE_COPY', $aout->depth],
                           ['UPDATE_VOLUME', $aout->depth],
                           ['UPDATE_MARC', 0],
+                          ['VIEW_HOLD', 0],
                           ['VIEW_USER', 0],
                          );
     # Create permission.grp_perm_map entries:
