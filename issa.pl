@@ -439,6 +439,17 @@ sub checkout
 {
     check_session_time();
     my ($copy_barcode, $patron_barcode) = @_;
+
+    # Check for copy:
+    my $copy = copy_from_barcode($copy_barcode);
+    unless (defined($copy) && blessed($copy)) {
+        return 'COPY_BARCODE_NOT_FOUND';
+    }
+
+    # Check for user
+    my $uid = user_id_from_barcode($patron_barcode);
+    return 'PATRON_BARCODE_NOT_FOUND' if (ref($uid));
+
     my $response = OpenSRF::AppSession->create('open-ils.circ')
         ->request('open-ils.circ.checkout.full.override', $session{authtoken},
                   { copy_barcode => $copy_barcode,
