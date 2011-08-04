@@ -589,9 +589,19 @@ sub user_id_from_barcode
 {
     check_session_time();
     my ($barcode) = @_;
-    my $response = OpenSRF::AppSession->create('open-ils.actor')
-        ->request('open-ils.actor.user.retrieve_id_by_barcode_or_username', $session{authtoken}, $barcode)
-        ->gather(1);
+
+    my $response;
+
+    my $e = new_editor(authtoken=>$session{authtoken});
+    return $response unless ($e->checkauth);
+
+    my $card = $e->search_actor_card({barcode => $barcode, active => 't'});
+    return $e->event unless($card);
+
+    $response = $card->[0]->usr if (@$card);
+
+    $e->finish;
+
     return $response;
 }
 
