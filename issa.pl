@@ -58,6 +58,10 @@ my $password = $xpath->findvalue("/issa/credentials/password")->value();
 my $work_ou = $xpath->findvalue("/issa/credentials/work_ou")->value();
 my $workstation = $xpath->findvalue("/issa/credentials/workstation")->value();
 my $bre_source = $xpath->findvalue("/issa/config_bib_source")->value();
+my $timeout = $xpath->findvalue("/issa/timeout")->value();
+
+# Setup our SIGALRM handler.
+$SIG{'ALRM'} = \&logout;
 
 # Make sure that the work_ou shortname is prepended to the workstation
 # name.
@@ -273,6 +277,8 @@ if (defined($session{authtoken})) {
             print("\n$r\n\n");
         }
     }
+    # Clear any SIGALRM timers.
+    alarm(0);
     logout();
 }
 else {
@@ -287,6 +293,8 @@ sub prompt
     my $name = shift;
     my @info = @{ $prompts{$name} };
     my $input;
+    # Reset our SIGALRM timer:
+    alarm($timeout);
     while (1) {
         printf("%s ", $info[0]);
         $input = <STDIN>;
