@@ -16,10 +16,10 @@
   <bootstrap_config></bootstrap_config>
   <!-- name of the config.bib_source entry to use when creating MARC Records -->
   <config_bib_source>Local System</config_bib_source>
-  <!-- Configurable options for created copies. -->
   <!-- Inactivity timeout in seconds. After this many seconds of
        inactivity, issa will quit. -->
   <timeout>180</timeout>
+  <!-- Configurable options for created copies. -->
   <copy>
     <!-- Add a stat_cat_entry element for each stat cat that you wish
          to fill in when creating copies. If you aren't using
