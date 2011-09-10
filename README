@@ -34,7 +34,7 @@ XML::XPath
 Most of these either come with Perl or are installed as prerequisites
 of installing OpenSRF and/or OpenILS.  One way to check if you need to
 install a Perl module is to run the following on the command line
-where MODULE::NAME is the name of the module you wisht to test:
+where MODULE::NAME is the name of the module you wish to test:
 
 perl -MMODULE::NAME -e exit
 
@@ -119,9 +119,9 @@ new permission, group_application.user.issa, to control who is able to
 add or remove users from this group.  It also creates the new group
 with a set of default permissions deemed appropriate for normal
 virtual catalog use.  If you find that you need to add or alter the
-permissions granted later, fee free to do so from within the Evergreen
-staff client.  Even if you already have a virtual catalog staff
-account migrated from another system or set up in advance, it is
+permissions granted later, feel free to do so from within the
+Evergreen staff client.  Even if you already have a virtual catalog
+staff account migrated from another system or set up in advance, it is
 recommended that you set this user's profile group to be that of the
 new group created by setup.pl.
 
@@ -175,19 +175,19 @@ element.  If you want to change the source used when creating
 bibliographic entries for copies added via issa, you can edit the
 config_bib_source element.  Finally, the comments explain how you can
 modify the prompts that issa displays and how you can configure
-statisticat category entries to be used by any copies created via
+statistical category entries to be used by any copies created via
 issa.  If you're not assigning stat. cat. entries to these copies, you
 should comment out or remove the incomplete entry in this section.
 
 Adding a Linux User Account:
 
 In order to use issa, the virtual catalog vendor will need an account
-on the server where issa is installed.  You have two basically two
-options here.  One is to use an existing account, opensrf for
-instance.  The second is to create a new account.  Using the account
-that owns your OpenILS installation on the system is perhaps the
-easier of the two.  However, creating a new account gives you slightly
-more control over the user.
+on the server where issa is installed.  You have basically two options
+here.  One is to use an existing account, opensrf for instance.  The
+second is to create a new account.  Using the account that owns your
+OpenILS installation on the system is perhaps the easier of the two.
+However, creating a new account gives you slightly more control over
+the user.
 
 When creating a new user, you will need to add this user to the group
 that owns your OpenILS installation.  (Normally, this is the opensrf
