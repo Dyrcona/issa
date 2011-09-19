@@ -683,7 +683,7 @@ sub place_hold
     }
 
     my $r = OpenSRF::AppSession->create('open-ils.circ')
-        ->request('open-ils.circ.holds.create.override', $session{authtoken}, $ahr)
+        ->request('open-ils.circ.holds.create', $session{authtoken}, $ahr)
         ->gather(1);
 
     return $r->{textcode} if (ref($r) eq 'HASH');
