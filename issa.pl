@@ -703,6 +703,7 @@ sub place_hold
             ->request('open-ils.circ.holds.create.override', $session{authtoken}, $ahr)
                 ->gather(1);
 
+        return $r->{ilsperm} if (ref($r) eq 'HASH' && $r->{textcode} eq 'PERM_FAILURE');
         return $r->{textcode} if (ref($r) eq 'HASH');
         return "SUCCESS";
     }
