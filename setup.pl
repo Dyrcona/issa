@@ -431,6 +431,7 @@ sub create_profile_group {
                           ['UPDATE_VOLUME', $aout->depth],
                           ['UPDATE_MARC', 0],
                           ['VIEW_HOLD', 0],
+                          ['VIEW_HOLD_PERMIT', 0],
                           ['VIEW_PERMIT_CHECKOUT', 0],
                           ['VIEW_USER', 0],
                          );

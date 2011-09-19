@@ -682,12 +682,33 @@ sub place_hold
         $ahr->email_notify('t');
     }
 
-    my $r = OpenSRF::AppSession->create('open-ils.circ')
-        ->request('open-ils.circ.holds.create', $session{authtoken}, $ahr)
-        ->gather(1);
+    my $params = { pickup_lib => $ahr->pickup_lib, patronid => $ahr->usr };
 
-    return $r->{textcode} if (ref($r) eq 'HASH');
-    return "SUCCESS";
+    if ($ahr->hold_type eq 'C') {
+        $params->{copy_id} = $ahr->target;
+    }
+    else {
+        $params->{titleid} = $ahr->target;
+    }
+
+    my $r = OpenSRF::AppSession->create('open-ils.circ')
+        ->request('open-ils.circ.title_hold.is_possible', $session{authtoken}, $params)
+            ->gather(1);
+
+    if ($r->{textcode}) {
+        return $r->{textcode};
+    }
+    elsif ($r->{success}) {
+        $r = OpenSRF::AppSession->create('open-ils.circ')
+            ->request('open-ils.circ.holds.create', $session{authtoken}, $ahr)
+                ->gather(1);
+
+        return $r->{textcode} if (ref($r) eq 'HASH');
+        return "SUCCESS";
+    }
+    else {
+        return 'HOLD_NOT_POSSIBLE';
+    }
 }
 
 # Delete a copy created by URSA
