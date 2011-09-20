@@ -528,7 +528,7 @@ sub receive_copy_transit
     check_session_time();
     my ($copy) = @_;
     my $response = OpenSRF::AppSession->create('open-ils.circ')
-        ->request('open-ils.circ.copy_transit_receive', $session{authtoken},
+        ->request('open-ils.circ.copy_transit.receive', $session{authtoken},
                   { copyid => $copy->id })
         ->gather(1);
     return $response;
