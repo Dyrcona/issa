@@ -682,7 +682,7 @@ sub place_hold
         $ahr->email_notify('t');
     }
 
-    my $params = { pickup_lib => $ahr->pickup_lib, patronid => $ahr->usr };
+    my $params = { pickup_lib => $ahr->pickup_lib, patronid => $ahr->usr, hold_type => $ahr->hold_type };
 
     if ($ahr->hold_type eq 'C') {
         $params->{copy_id} = $ahr->target;
