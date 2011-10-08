@@ -491,7 +491,7 @@ sub checkin
     return $e->event->{textcode} unless ($e->checkauth);
 
     my $circ = $e->search_action_circulation([ { target_copy => $copy->id, xact_finish => undef } ])->[0];
-    return 'COPY_NOT_CHECKED_OUT' unless ($circ->circ_lib == $where->id);
+    return 'COPY_NOT_CHECKED_OUT' unless (defined($circ) && $circ->circ_lib == $where->id);
 
     my $r = OpenSRF::AppSession->create('open-ils.circ')
         ->request('open-ils.circ.checkin', $session{authtoken}, { barcode => $barcode, void_overdues => 1 })
