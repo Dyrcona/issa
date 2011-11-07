@@ -22,6 +22,7 @@ installing issa.
 
 issa and the setup program also use the following Perl modules:
 
+DateTime
 Digest::MD5
 File::Basename
 MARC::Field

@@ -30,6 +30,7 @@ use MARC::Record;
 use MARC::Field;
 use MARC::File::XML;
 use POSIX qw/strftime/;
+use DateTime;
 
 # Hash to configure the prompts used by this program. Each named entry
 # points to an array with the following members:
@@ -59,6 +60,11 @@ my $work_ou = $xpath->findvalue("/issa/credentials/work_ou")->value();
 my $workstation = $xpath->findvalue("/issa/credentials/workstation")->value();
 my $bre_source = $xpath->findvalue("/issa/config_bib_source")->value();
 my $timeout = $xpath->findvalue("/issa/timeout")->value();
+
+# Parameters for title holds:
+my $title_holds = {};
+$title_holds->{unit} = $xpath->findvalue('/issa/holds/title/duration/@unit')->value();
+$title_holds->{duration} = $xpath->findvalue('/issa/holds/title/duration')->value();
 
 # Setup our SIGALRM handler.
 $SIG{'ALRM'} = \&logout;
@@ -649,11 +655,11 @@ sub place_hold
     check_session_time();
     my ($type, $target, $patron, $pickup_ou) = @_;
 
+    my $ou = org_unit_from_shortname($work_ou); # $work_ou is global
     my $ahr = Fieldmapper::action::hold_request->new;
     $ahr->hold_type($type);
     if ($type eq 'C') {
         # Check if we own the copy.
-        my $ou = org_unit_from_shortname($work_ou); # $work_ou is global
         if ($ou->id == $target->circ_lib) {
             # We own it, so let's place a copy hold.
             $ahr->target($target->id);
@@ -681,6 +687,10 @@ sub place_hold
     else {
         $ahr->email_notify('t');
     }
+
+    # We must have a title hold and we want to change the hold
+    # expiration date if we're sending the copy to the VC.
+    set_title_hold_expiration($ahr) if ($ahr->pickup_lib == $ou->id);
 
     my $params = { pickup_lib => $ahr->pickup_lib, patronid => $ahr->usr, hold_type => $ahr->hold_type };
 
@@ -712,6 +722,23 @@ sub place_hold
     }
     else {
         return 'HOLD_NOT_POSSIBLE';
+    }
+}
+
+# Set the expiration date on title holds
+#
+# Argument
+# Fieldmapper action.hold_request object
+#
+# Returns
+# Nothing
+sub set_title_hold_expiration
+{
+    my $hold = shift;
+    if ($title_holds->{unit} && $title_holds->{duration}) {
+        my $expiration = DateTime->now();
+        $expiration->add($title_holds->{unit} => $title_holds->{duration});
+        $hold->expire_time($expiration->iso8601());
     }
 }
 

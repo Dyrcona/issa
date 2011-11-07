@@ -19,6 +19,17 @@
   <!-- Inactivity timeout in seconds. After this many seconds of
        inactivity, issa will quit. -->
   <timeout>180</timeout>
+  <!-- Configurable options for holds. -->
+  <holds>
+    <!-- For title holds: These are typically holds placed by issa on
+         our copies to be sent to fill vircual catalog holds
+         elsewhere. -->
+    <title>
+      <!-- Number of days, weeks, months, years before the holds
+           expire. -->
+      <duration unit="days">7</duration>
+    </title>
+  </holds>
   <!-- Configurable options for created copies. -->
   <copy>
     <!-- Add a stat_cat_entry element for each stat cat that you wish
