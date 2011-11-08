@@ -69,6 +69,9 @@ $title_holds->{duration} = $xpath->findvalue('/issa/holds/title/duration')->valu
 # Setup our SIGALRM handler.
 $SIG{'ALRM'} = \&logout;
 
+# Get our local timezone for setting hold expiration dates.
+my $tz = DateTime::TimeZone->new(name => 'local');
+
 # Make sure that the work_ou shortname is prepended to the workstation
 # name.
 $workstation = $work_ou . '-' . $workstation if ($workstation !~ /^${work_ou}-/);
@@ -736,7 +739,7 @@ sub set_title_hold_expiration
 {
     my $hold = shift;
     if ($title_holds->{unit} && $title_holds->{duration}) {
-        my $expiration = DateTime->now();
+        my $expiration = DateTime->now(time_zone => $tz);
         $expiration->add($title_holds->{unit} => $title_holds->{duration});
         $hold->expire_time($expiration->iso8601());
     }
