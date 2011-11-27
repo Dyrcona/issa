@@ -132,32 +132,26 @@ if (defined($session{authtoken})) {
                 my @penalties = @{$patron->standing_penalties};
                 if ($patron->barred eq 't') {
                     print(" Barred\n");
-                }
-                elsif ($patron->active eq 'f') {
+                } elsif ($patron->active eq 'f') {
                     print(" Inactive\n");
-                }
-                elsif ($#penalties > -1) {
+                } elsif ($#penalties > -1) {
                     my $penalty;
                     foreach $penalty (@penalties) {
                         printf(" %s", $penalty->standing_penalty->name);
                     }
                     print("\n");
-                }
-                elsif ($patron->juvenile eq 't') {
+                } elsif ($patron->juvenile eq 't') {
                     print(" Juvenile\n");
-                }
-                else {
+                } else {
                     print(" Active\n");
                 }
                 print("\n");
-            }
-            else {
+            } else {
                 print("PATRON_NOT_FOUND\n\n");
                 next;
             }
 
-        }
-        elsif ($input eq '2') {
+        } elsif ($input eq '2') {
             my $c = prompt('copy');
             next if ($c =~ /^[qQ]$/);
 
@@ -167,16 +161,13 @@ if (defined($session{authtoken})) {
             if (!defined($r)) {
                 print("COPY_BARCODE_NOT_FOUND\n\n");
                 next;
-            }
-            elsif (blessed($r)) {
+            } elsif (blessed($r)) {
                 printf("%d\n\n", $r->id);
-            }
-            elsif (ref($r) && reftype($r) eq 'HASH') {
+            } elsif (ref($r) && reftype($r) eq 'HASH') {
                 printf("%s\n\n", $r->{textcode});
             }
 
-        }
-        elsif ($input eq '3') {
+        } elsif ($input eq '3') {
             print_hold_identifier_menu();
             my $which = prompt('hold');
             next if ($which =~ /^[qQ]$/);
@@ -187,8 +178,7 @@ if (defined($session{authtoken})) {
             if ($which eq '1') {
                 $bib = prompt('bib');
                 next if ($bib =~ /^[qQ]$/);
-            }
-            else {
+            } else {
                 my $c = prompt('copy');
                 next if ($c =~ /^[qQ]$/);
                 $copy = copy_from_barcode($c);
@@ -215,8 +205,7 @@ if (defined($session{authtoken})) {
             if (ref($pickup) eq 'HASH') {
                 printf("\n%s\n\n", $pickup->{textcode});
                 next;
-            }
-            elsif (!can_have_users($pickup)) {
+            } elsif (!can_have_users($pickup)) {
                 print("\nNOT_A_VALID_PICKUP_POINT\n\n");
                 next;
             }
@@ -224,14 +213,12 @@ if (defined($session{authtoken})) {
             my $r;
             if ($bib) {
                 $r = place_hold('T', $bib, $patron, $pickup);
-            }
-            elsif ($copy) {
+            } elsif ($copy) {
                 $r = place_hold('C', $copy, $patron, $pickup);
             }
             print("\n$r\n\n");
 
-        }
-        elsif ($input eq '4') {
+        } elsif ($input eq '4') {
             my $p = prompt('patron');
             next if ($p =~ /^[qQ]$/);
 
@@ -253,15 +240,13 @@ if (defined($session{authtoken})) {
             }
             print("\n$r\n\n");
 
-        }
-        elsif ($input eq '5') {
+        } elsif ($input eq '5') {
             my $c = prompt('copy');
             next if ($c =~ /^[Qq]$/);
             my $r = checkin($c, $ou);
             print("\n$r\n\n");
 
-        }
-        elsif ($input eq '6') {
+        } elsif ($input eq '6') {
             my $t = prompt('title');
             my $cn = prompt('callnumber');
             next if ($cn =~ /^[Qq]$/);
@@ -270,8 +255,7 @@ if (defined($session{authtoken})) {
 
             my $r = create_copy($t, $cn, $c, $ou);
             print("\n$r\n\n");
-        }
-        elsif ($input eq '7') {
+        } elsif ($input eq '7') {
             my $c = prompt('copy');
             next if ($c =~ /^[Qq]$/);
 
@@ -289,16 +273,14 @@ if (defined($session{authtoken})) {
     # Clear any SIGALRM timers.
     alarm(0);
     logout();
-}
-else {
+} else {
     die("Hes's dead, Jim.");
 }
 
 # Functions to print the menus/command prompts:
 
 # Print a prompt, wait for and validate input.
-sub prompt
-{
+sub prompt {
     my $name = shift;
     my @info = @{ $prompts{$name} };
     my $input;
@@ -310,8 +292,7 @@ sub prompt
         chomp($input);
         if ($input =~ /$info[1]/) {
             last;
-        }
-        else {
+        } else {
             printf("%s\n", $info[2]);
         }
     }
@@ -319,8 +300,7 @@ sub prompt
 }
 
 # The main menu
-sub print_main_menu
-{
+sub print_main_menu {
     my $text =<<EOMAINMENU;
 Main Menu
 1. Retrieve Patron
@@ -337,8 +317,7 @@ EOMAINMENU
 }
 
 # Place Hold Identifier Menu
-sub print_hold_identifier_menu
-{
+sub print_hold_identifier_menu {
     my $text =<<EOIDENTIFIERMENU;
 Place Hold
 Choose Target Identifier
@@ -360,8 +339,7 @@ EOIDENTIFIERMENU
 #
 # Returns a hash with the authtoken, authtime, and expiration (time in
 # seconds since 1/1/1970).
-sub login
-{
+sub login {
     my ($uname, $password, $workstation) = @_;
 
     my $seed = OpenSRF::AppSession
@@ -396,8 +374,7 @@ sub login
 #
 # Returns
 # Does not return anything
-sub logout
-{
+sub logout {
     if (time() < $session{'expiration'}) {
         my $response = OpenSRF::AppSession
             ->create('open-ils.auth')
@@ -406,8 +383,7 @@ sub logout
         if ($response) {
             print("Logout successful. Good-bye.\n");
             exit(0);
-        }
-        else {
+        } else {
             die("Logout unsuccessful. Good-bye, anyway.");
         }
     }
@@ -419,8 +395,7 @@ sub logout
 #
 # Returns
 # User logged via issa.
-sub get_session
-{
+sub get_session {
     my $response = OpenSRF::AppSession->create('open-ils.auth')
         ->request('open-ils.auth.session.retrieve', $session{authtoken})->gather(1);
     return $response;
@@ -434,8 +409,7 @@ sub get_session
 # Returns
 # Fieldmapper aou object
 # or HASH on error
-sub org_unit_from_shortname
-{
+sub org_unit_from_shortname {
     check_session_time();
     my ($shortname) = @_;
     my $ou = OpenSRF::AppSession->create('open-ils.actor')
@@ -452,8 +426,7 @@ sub org_unit_from_shortname
 #
 # Returns
 # textcode of the OSRF response.
-sub checkout
-{
+sub checkout {
     check_session_time();
     my ($copy_barcode, $patron_barcode) = @_;
 
@@ -486,8 +459,7 @@ sub checkout
 # textcode of a failed OSRF request
 # 'COPY_NOT_CHECKED_OUT' when the copy is not checked out or not
 # checked out to the user's work_ou
-sub checkin
-{
+sub checkin {
     check_session_time();
     my ($barcode, $where) = @_;
 
@@ -515,8 +487,7 @@ sub checkin
 # copy
 #
 # Returns the OSRF response, which could be a scalar or a hash
-sub abort_copy_transit
-{
+sub abort_copy_transit {
     check_session_time();
     my ($copy) = @_;
     my $response = OpenSRF::AppSession->create('open-ils.circ')
@@ -532,8 +503,7 @@ sub abort_copy_transit
 # copy
 #
 # Returns the OSRF response, which could be a scalar or a hash
-sub receive_copy_transit
-{
+sub receive_copy_transit {
     check_session_time();
     my ($copy) = @_;
     my $response = OpenSRF::AppSession->create('open-ils.circ')
@@ -551,8 +521,7 @@ sub receive_copy_transit
 # Returns
 # transit object
 # or event hash on error
-sub fetch_transit_by_copy
-{
+sub fetch_transit_by_copy {
     check_session_time();
     my ($copy) = @_;
     my $response = OpenSRF::AppSession->create('open-ils.circ')
@@ -568,8 +537,7 @@ sub fetch_transit_by_copy
 # Returns
 # biblio.record_entry fieldmapper object or
 # hash on error
-sub bre_from_barcode
-{
+sub bre_from_barcode {
     check_session_time();
     my ($barcode) = @_;
     my $response = OpenSRF::AppSession->create('open-ils.storage')
@@ -585,8 +553,7 @@ sub bre_from_barcode
 # Returns
 # asset.copy fieldmaper object
 # or hash on error
-sub copy_from_barcode
-{
+sub copy_from_barcode {
     check_session_time();
     my ($barcode) = @_;
     my $response = OpenSRF::AppSession->create('open-ils.search')
@@ -602,8 +569,7 @@ sub copy_from_barcode
 # Returns
 # actor.usr.id
 # or hash on error
-sub user_id_from_barcode
-{
+sub user_id_from_barcode {
     check_session_time();
     my ($barcode) = @_;
 
@@ -629,8 +595,7 @@ sub user_id_from_barcode
 # Returns
 # fieldmapped, fleshed user or
 # event hash on error
-sub flesh_user
-{
+sub flesh_user {
     check_session_time();
     my ($id) = @_;
     my $response = OpenSRF::AppSession->create('open-ils.actor')
@@ -653,8 +618,7 @@ sub flesh_user
 # textcode of a failed OSRF request
 # "HOLD_TYPE_NOT_SUPPORTED" if the hold type is not supported
 # (Currently only support 'T' and 'C')
-sub place_hold
-{
+sub place_hold {
     check_session_time();
     my ($type, $target, $patron, $pickup_ou) = @_;
 
@@ -667,18 +631,15 @@ sub place_hold
             # We own it, so let's place a copy hold.
             $ahr->target($target->id);
             $ahr->current_copy($target->id);
-        }
-        else {
+        } else {
             # We don't own it, so let's place a title hold instead.
             my $bib = bre_from_barcode($target->barcode);
             $ahr->target($bib->id);
             $ahr->hold_type('T');
         }
-    }
-    elsif ($type eq 'T') {
+    } elsif ($type eq 'T') {
         $ahr->target($target);
-    }
-    else {
+    } else {
         return "HOLD_TYPE_NOT_SUPPORTED";
     }
     $ahr->usr($patron->id);
@@ -686,8 +647,7 @@ sub place_hold
     if (!$patron->email) {
         $ahr->email_notify('f');
         $ahr->phone_notify($patron->day_phone) if ($patron->day_phone);
-    }
-    else {
+    } else {
         $ahr->email_notify('t');
     }
 
@@ -699,8 +659,7 @@ sub place_hold
 
     if ($ahr->hold_type eq 'C') {
         $params->{copy_id} = $ahr->target;
-    }
-    else {
+    } else {
         $params->{titleid} = $ahr->target;
     }
 
@@ -710,8 +669,7 @@ sub place_hold
 
     if ($r->{textcode}) {
         return $r->{textcode};
-    }
-    elsif ($r->{success}) {
+    } elsif ($r->{success}) {
         $r = OpenSRF::AppSession->create('open-ils.circ')
             ->request('open-ils.circ.holds.create.override', $session{authtoken}, $ahr)
                 ->gather(1);
@@ -722,8 +680,7 @@ sub place_hold
             $returnValue =~ s/\.override$// if ($r->{textcode} eq 'PERM_FAILURE');
         }
         return $returnValue;
-    }
-    else {
+    } else {
         return 'HOLD_NOT_POSSIBLE';
     }
 }
@@ -735,8 +692,7 @@ sub place_hold
 #
 # Returns
 # Nothing
-sub set_title_hold_expiration
-{
+sub set_title_hold_expiration {
     my $hold = shift;
     if ($title_holds->{unit} && $title_holds->{duration}) {
         my $expiration = DateTime->now(time_zone => $tz);
@@ -753,8 +709,7 @@ sub set_title_hold_expiration
 # Returns
 # "SUCCESS" on success
 # Event textcode if an error occurs
-sub delete_copy
-{
+sub delete_copy {
     check_session_time();
     my ($copy) = @_;
 
@@ -811,8 +766,7 @@ sub delete_copy
 # Returns
 # bib id on succes
 # event textcode on failure
-sub create_copy
-{
+sub create_copy {
     check_session_time();
     my ($title, $callnumber, $barcode, $ou) = @_;
 
@@ -923,8 +877,7 @@ sub create_copy
 #
 # Returns
 # String with XML for the MARC::Record as Evergreen likes it
-sub convert2marcxml
-{
+sub convert2marcxml {
     my $input = shift;
     (my $xml = $input->as_xml_record()) =~ s/\n//sog;
     $xml =~ s/^<\?xml.+\?\s*>//go;
@@ -943,8 +896,7 @@ sub convert2marcxml
 # Returns
 # 1 if true
 # 0 if false
-sub can_have_users
-{
+sub can_have_users {
     check_session_time();
     my ($ou) = @_;
     my $e = new_editor(authtoken=>$session{authtoken});
@@ -963,8 +915,7 @@ sub can_have_users
 #
 # Returns
 # Nothing
-sub check_session_time
-{
+sub check_session_time {
     if (time() > $session{'expiration'}) {
         %session = login($username, $password, $workstation);
         if (!%session) {
@@ -1003,8 +954,7 @@ sub check_session_time
 # It doesn't make sense to configure a custom prompt more than once,
 # but if you do, the one that appears last in the file will take
 # precedence over all previous ones.
-sub customize_prompts
-{
+sub customize_prompts {
     my $nodeset = $xpath->findnodes('/issa/prompts');
     foreach my $node ($nodeset->get_nodelist) {
         if ($node->isa('XML::XPath::Node::Element')) {

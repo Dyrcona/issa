@@ -90,8 +90,7 @@ sub get_bootstrap {
             print("\nYou entered $bootstrap.\nIs this correct (Y|N)?\n");
             $input = <STDIN>;
             $continue = ($input !~ /^\s*Y/i);
-        }
-        else {
+        } else {
             print("File does not exist: $bootstrap!\n\n");
         }
     } while ($continue);
@@ -138,8 +137,7 @@ sub create_or_select_work_ou {
         $input = trim($input);
         if ($input eq '1') {
             $work_ou = choose_work_ou();
-        }
-        elsif ($input eq '2') {
+        } elsif ($input eq '2') {
             $work_ou = create_work_ou();
         }
     } until ($work_ou);
@@ -289,8 +287,7 @@ sub create_or_select_parents {
 
     if ($input eq '1') {
         $parent = select_aou_of_type($parent_aout);
-    }
-    else {
+    } else {
         $parent = create_aou_of_type($parent_aout);
     }
     return $parent;
@@ -452,8 +449,7 @@ sub create_profile_group {
             $pgpm->grantable('f');
             $pgpm = $editor->create_permission_grp_perm_map($pgpm);
             print("Failed to map $code permission.\n") unless($pgpm);
-        }
-        else {
+        } else {
             print("Failed to find $code permission.\n");
         }
     }
