@@ -50,6 +50,21 @@
     -->
     <stat_cat_entry stat_cat="" required="1"></stat_cat_entry>
   </copy>
+  <!-- Configurable options for patron retrieval/validation -->
+  <patrons>
+    <!-- List of blocks to block a patron on.  These correspond to
+         entries in the block_list column of the config.stand_penalty
+         table.  Remove any of these that you don't wish to use, hold
+         and renew, perhaps.  You can add additional entries if you
+         make up new blocks for your system.
+    -->
+    <!-- Block patrons who are barred from checkout. -->
+    <block_on block="CIRC"/>
+    <!-- Block patrons who are barred from renewal. -->
+    <block_on block="RENEW"/>
+    <!-- Block patrons who are barred from placing holds. -->
+    <block_on block="HOLD"/>
+  </patrons>
   <!-- You can add custom prompt messages in a <prompts> block.
        
        Each prompt can be defined with a cusom tag named for the

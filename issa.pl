@@ -66,6 +66,19 @@ my $title_holds = {};
 $title_holds->{unit} = $xpath->findvalue('/issa/holds/title/duration/@unit')->value();
 $title_holds->{duration} = $xpath->findvalue('/issa/holds/title/duration')->value();
 
+# Block types to block patrons:
+my $block_types = [];
+my $bnodes = $xpath->find('/issa/patrons/block_on/@block');
+if ($bnodes) {
+    if ($bnodes->isa('XML::XPath::NodeSet')) {
+        foreach ($bnodes->get_nodelist) {
+            push(@{$block_types}, $_->getData) if ($_->isa('XML::XPath::Node::Attribute'));
+        }
+    } elsif ($bnodes->isa('XML::XPath::Node::Attribute')) {
+        push(@{$block_types}, $bnodes->getData);
+    }
+}
+
 # Setup our SIGALRM handler.
 $SIG{'ALRM'} = \&logout;
 
@@ -129,20 +142,38 @@ if (defined($session{authtoken})) {
                 print("\n");
                 printf("Expiration Date: %s\n", defined($patron->expire_date) ? $patron->expire_date : "N/A");
                 print("Status:");
+                my $patron_ok = 1;
                 my @penalties = @{$patron->standing_penalties};
                 if ($patron->barred eq 't') {
                     print(" Barred\n");
+                    $patron_ok = 0;
                 } elsif ($patron->active eq 'f') {
                     print(" Inactive\n");
+                    $patron_ok = 0;
                 } elsif ($#penalties > -1) {
                     my $penalty;
                     foreach $penalty (@penalties) {
-                        printf(" %s", $penalty->standing_penalty->name);
+                        if (defined($penalty->standing_penalty->block_list)) {
+                            my @block_list = split(/\|/, $penalty->standing_penalty->block_list);
+                            foreach my $block (@block_list) {
+                                foreach my $block_on (@$block_types) {
+                                    if ($block eq $block_on) {
+                                        printf(" %s", $penalty->standing_penalty->name);
+                                        $patron_ok = 0;
+                                    }
+                                    last unless ($patron_ok);
+                                }
+                                last unless ($patron_ok);
+                            }
+                        }
                     }
-                    print("\n");
+                    print("\n") unless ($patron_ok);
                 } elsif ($patron->juvenile eq 't') {
                     print(" Juvenile\n");
-                } else {
+                    # We lie, just to keep Active from also printing.
+                    $patron_ok = 0;
+                }
+                if ($patron_ok) {
                     print(" Active\n");
                 }
                 print("\n");
