@@ -758,6 +758,14 @@ sub delete_copy {
     # Delete everything in a transaction and rollback if anything fails.
     $e->xact_begin;
     my $r; # To hold results of editor calls
+    # If the copy is checked out, let's try to check it in.
+    if ($copy->status == OILS_COPY_STATUS_CHECKED_OUT) {
+        $r = OpenSRF::AppSession->create('open-ils.circ')
+            ->request('open-ils.circ.checkin', $session{authtoken},
+                      { barcode => $copy->barcode, void_overdues => 1 })
+                ->gather(1);
+        # We don't care if it succeeds or not.
+    }
     $r = $e->delete_asset_copy($copy);
     unless ($r) {
         my $lval = $e->event->{textcode};
