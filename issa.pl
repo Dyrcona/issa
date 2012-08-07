@@ -762,9 +762,34 @@ sub delete_copy {
     if ($copy->status == OILS_COPY_STATUS_CHECKED_OUT) {
         $r = OpenSRF::AppSession->create('open-ils.circ')
             ->request('open-ils.circ.checkin', $session{authtoken},
-                      { barcode => $copy->barcode, void_overdues => 1 })
-                ->gather(1);
+                      { barcode => $copy->barcode, void_overdues => 1,
+                        noop => 1})->gather(1);
         # We don't care if it succeeds or not.
+    }
+    # If the copy is on hold and they are unfulfilled, then cancel them.
+    $r = $e->search_action_hold_request(
+        {
+            target => $copy->id, hold_type => 'C',
+            cancel_time => undef, fulfillment_time => undef
+        });
+    if ($r && scalar @$r) {
+        foreach my $h (@$r) {
+            $h->cancel_time('now()');
+            $h->cancel_cause(1);
+            $h->cancel_note('Virtual catalog deleted.');
+            $e->update_action_hold_request($h);
+        }
+    }
+    # If the copy is in transit, kill the transit.
+    $r = $e->search_action_transit_copy(
+        {
+            target_copy => $copy->id, dest_recv_time => undef
+        }
+    );
+    if ($r && scalar @$r) {
+        foreach	my $atc (@$r) {
+            $e->delete_action_transit_copy($atc);
+        }
     }
     $r = $e->delete_asset_copy($copy);
     unless ($r) {
