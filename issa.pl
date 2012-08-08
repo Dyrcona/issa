@@ -66,6 +66,9 @@ my $title_holds = {};
 $title_holds->{unit} = $xpath->findvalue('/issa/holds/title/duration/@unit')->value();
 $title_holds->{duration} = $xpath->findvalue('/issa/holds/title/duration')->value();
 
+# Use force holds for copy holds:
+my $use_force = 0;
+
 # Block types to block patrons:
 my $block_types = [];
 my $bnodes = $xpath->find('/issa/patrons/block_on/@block');
@@ -107,6 +110,7 @@ if (defined($session{authtoken})) {
     if (!blessed($ou)) {
         die("Misconfiguration encountered.\nPlease inform support that $work_ou org_unit does not exist.");
     }
+    $use_force = check_force_holds($session{authtoken});
     while (lc($input) ne 'q') {
         print_main_menu();
         $input = prompt('main');
@@ -662,11 +666,14 @@ sub place_hold {
             # We own it, so let's place a copy hold.
             $ahr->target($target->id);
             $ahr->current_copy($target->id);
+            # If we have permission to place force holds, then use it.
+            $ahr->hold_type('F') if ($use_force);
         } else {
             # We don't own it, so let's place a title hold instead.
             my $bib = bre_from_barcode($target->barcode);
             $ahr->target($bib->id);
             $ahr->hold_type('T');
+            $type = 'T';
         }
     } elsif ($type eq 'T') {
         $ahr->target($target);
@@ -688,7 +695,7 @@ sub place_hold {
 
     my $params = { pickup_lib => $ahr->pickup_lib, patronid => $ahr->usr, hold_type => $ahr->hold_type };
 
-    if ($ahr->hold_type eq 'C') {
+    if ($type eq 'C') {
         $params->{copy_id} = $ahr->target;
     } else {
         $params->{titleid} = $ahr->target;
@@ -769,7 +776,7 @@ sub delete_copy {
     # If the copy is on hold and they are unfulfilled, then cancel them.
     $r = $e->search_action_hold_request(
         {
-            target => $copy->id, hold_type => 'C',
+            target => $copy->id, hold_type => ['C','F'],
             cancel_time => undef, fulfillment_time => undef
         });
     if ($r && scalar @$r) {
@@ -891,6 +898,10 @@ sub create_copy {
     $copy->status(0);
     $copy->editor($user->id);
     $copy->creator($user->id);
+    # If we have permissions to use force holds, then we'll create the
+    # copies as not holdable. This way, staff at member libraries
+    # can't place holds on VC copies that will never fill.
+    $copy->holdable('f') if ($use_force);
 
     # Add the configured stat cat entries.
     my @stat_cats;
@@ -986,6 +997,20 @@ sub check_session_time {
             die("Failed to reinitialize the session after expiration.");
         }
     }
+}
+
+# Check if we're allowed to place force holds.
+#
+# Arguments
+# authtoken
+#
+# Return
+# true or false
+sub check_force_holds {
+    my $authtoken = shift;
+    my $e = new_editor(authtoken=>$authtoken);
+    return undef unless ($e->checkauth());
+    return $e->allowed('COPY_HOLDS_FORCE');
 }
 
 # You can add custom prompt messages in a <prompts> block in the
