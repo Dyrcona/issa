@@ -157,6 +157,22 @@ for your ILL policies.  These will need to be configured so that they
 affect the organizational unit used by issa for placing holds and
 doing circulation.
 
+Using Force Holds:
+
+You can configure issa to use force holds for copies that come from
+outside your Evergreen system for your patrons.  This is done simply
+by giving the COPY_HOLDS_FORCE permission to the issa group.  Once
+this is done all copies created by the issa software will have their
+holdable flag set to false, and issa will use force holds to place
+holds on these copies for your patrons.  This has the intended effect
+of preventing library staff from placing holds on these copies.
+
+If you have an existing issa group, then you will need to grant this
+permission to that group using either the staff client or by running
+an insert query in your database.  If you are setting up a new
+installation of issa, setup.pl has been modified to ask you if you
+want to use this feature.
+
 Configuring issa.xml:
 
 You will want to edit issa.xml.example and save a copy in a location
