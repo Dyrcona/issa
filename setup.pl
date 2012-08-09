@@ -375,6 +375,11 @@ sub create_profile_group {
     # We're going to need the aout information for the permissions:
     my $aout = $editor->retrieve_actor_org_unit_type($aou->ou_type);
 
+    # Check if the COPY_HOLDS_FORCE permission exists.
+    my $force_available = 0;
+    my $chf = $editor->search_permission_perm_list({code=>'COPY_HOLDS_FORCE'});
+    $force_available = 1 if ($chf && scalar @$chf);
+
     # Create the group application perm:
     my $grp_perm = Fieldmapper::permission::perm_list->new();
     $grp_perm->code('group_application.user.issa');
@@ -432,6 +437,26 @@ sub create_profile_group {
                           ['VIEW_PERMIT_CHECKOUT', 0],
                           ['VIEW_USER', 0],
                          );
+
+    # Ask if they want to use COPY_HOLDS_FORCE permission.
+    if ($force_available) {
+        my $response;
+        print("You can grant the COPY_HOLDS_FORCE permission to the $name "
+                  . "group.\n");
+        print("Doing so will cause issa's copies to be non-holdable and"
+                  . "\nrequire issa to use force holds when placing holds"
+                      . " on its copies for your patrons.\n");
+        print("This has the intended effect of stopping library staff from"
+                  . " placing holds on issa's copies.\n");
+        do {
+            print("\nDo you with to use force holds with issa? [y/n]: ");
+            $response = <STDIN>;
+        } until ($response && $response =~ /^[YynN]/);
+        if ($response =~ /^[yY]/) {
+            push(@required_perms, ['COPY_HOLDS_FORCE', $aout->depth]);
+        }
+    }
+
     # Create permission.grp_perm_map entries:
     foreach my $entry (@required_perms) {
         my $code = $entry->[0];
