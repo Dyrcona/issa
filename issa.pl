@@ -1,5 +1,7 @@
 #!/usr/bin/perl
 # Copyright © 2011 Jason J.A. Stephenson <jason@sigio.com>
+# Portions Copyright © 2012 Merrimack Valley Library Consortium
+# <jstephenson@mvlc.org>
 #
 # This file is part of issa.
 #
