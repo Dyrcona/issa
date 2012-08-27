@@ -923,9 +923,7 @@ sub create_copy {
                 $asce->stat_cat($stat_cat_id);
                 $asce->value($value);
                 $asce->owner($ou->id);
-                $e->xact_begin;
                 $asce = $e->create_asset_stat_cat_entry($asce);
-                $e->xact_commit;
             }
             push(@stat_cats, $asce);
         }
