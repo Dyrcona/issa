@@ -905,37 +905,39 @@ sub create_copy {
     # can't place holds on VC copies that will never fill.
     $copy->holdable('f') if ($use_force);
 
-    # Add the configured stat cat entries.
-    my @stat_cats;
-    my $nodes = $xpath->find("/issa/copy/stat_cat_entry");
-    foreach my $node ($nodes->get_nodelist) {
-        next unless ($node->isa('XML::XPath::Node::Element'));
-        my $stat_cat_id = $node->getAttribute('stat_cat');
-        my $value = $node->string_value();
-        # Need to search for an existing asset.stat_cat_entry
-        my $asce = $e->search_asset_stat_cat_entry({'stat_cat' => $stat_cat_id, 'value' => $value})->[0];
-        unless ($asce) {
-            # if not, create a new one and use its id.
-            $asce = Fieldmapper::asset::stat_cat_entry->new();
-            $asce->stat_cat($stat_cat_id);
-            $asce->value($value);
-            $asce->owner($ou->id);
-            $e->xact_begin;
-            $asce = $e->create_asset_stat_cat_entry($asce);
-            $e->xact_commit;
-        }
-        push(@stat_cats, $asce);
-    }
-
     $e->xact_begin;
     $copy = $e->create_asset_copy($copy);
-    if (scalar @stat_cats) {
-        foreach my $asce (@stat_cats) {
-            my $ascecm = Fieldmapper::asset::stat_cat_entry_copy_map->new();
-            $ascecm->stat_cat($asce->stat_cat);
-            $ascecm->stat_cat_entry($asce->id);
-            $ascecm->owning_copy($copy->id);
-            $ascecm = $e->create_asset_stat_cat_entry_copy_map($ascecm);
+    # Add the configured stat cat entries.
+    my $nodes = $xpath->find("/issa/copy/stat_cat_entry");
+    if ($nodes->get_nodelist) {
+        my @stat_cats = ();
+        foreach my $node ($nodes->get_nodelist) {
+            next unless ($node->isa('XML::XPath::Node::Element'));
+            my $stat_cat_id = $node->getAttribute('stat_cat');
+            my $value = $node->string_value();
+            # Need to search for an existing asset.stat_cat_entry
+            my $asce = $e->search_asset_stat_cat_entry({'stat_cat' => $stat_cat_id, 'value' => $value})->[0];
+            unless ($asce) {
+                # if not, create a new one and use its id.
+                $asce = Fieldmapper::asset::stat_cat_entry->new();
+                $asce->stat_cat($stat_cat_id);
+                $asce->value($value);
+                $asce->owner($ou->id);
+                $e->xact_begin;
+                $asce = $e->create_asset_stat_cat_entry($asce);
+                $e->xact_commit;
+            }
+            push(@stat_cats, $asce);
+        }
+
+        if (scalar @stat_cats) {
+            foreach my $asce (@stat_cats) {
+                my $ascecm = Fieldmapper::asset::stat_cat_entry_copy_map->new();
+                $ascecm->stat_cat($asce->stat_cat);
+                $ascecm->stat_cat_entry($asce->id);
+                $ascecm->owning_copy($copy->id);
+                $ascecm = $e->create_asset_stat_cat_entry_copy_map($ascecm);
+            }
         }
     }
     $e->commit;
