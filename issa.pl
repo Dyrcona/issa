@@ -918,7 +918,7 @@ sub create_copy {
             # Need to search for an existing asset.stat_cat_entry
             my $search_result;
             my $asce;
-            my $search_result = $e->search_asset_stat_cat_entry({'stat_cat' => $stat_cat_id, 'value' => $value});
+            $search_result = $e->search_asset_stat_cat_entry({'stat_cat' => $stat_cat_id, 'value' => $value});
             if ($search_result) {
                 $asce = $search_result->[0];
             } else {
