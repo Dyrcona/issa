@@ -909,14 +909,23 @@ sub create_copy {
     $copy = $e->create_asset_copy($copy);
     # Add the configured stat cat entries.
     my $nodes = $xpath->find("/issa/copy/stat_cat_entry");
-    if ($nodes->get_nodelist) {
+    if ($nodes && $nodes->get_nodelist) {
         my @stat_cats = ();
         foreach my $node ($nodes->get_nodelist) {
             next unless ($node->isa('XML::XPath::Node::Element'));
             my $stat_cat_id = $node->getAttribute('stat_cat');
             my $value = $node->string_value();
             # Need to search for an existing asset.stat_cat_entry
-            my $asce = $e->search_asset_stat_cat_entry({'stat_cat' => $stat_cat_id, 'value' => $value})->[0];
+            my $search_result;
+            my $asce;
+            my $search_result = $e->search_asset_stat_cat_entry({'stat_cat' => $stat_cat_id, 'value' => $value});
+            if ($search_result) {
+                $asce = $search_result->[0];
+            } else {
+                # check if the stat_cat exists.
+                $search_result = $e->search_asset_stat_cat({'id' => $stat_cat_id});
+                next unless($search_result);
+            }
             unless ($asce) {
                 # if not, create a new one and use its id.
                 $asce = Fieldmapper::asset::stat_cat_entry->new();
