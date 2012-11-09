@@ -64,6 +64,33 @@
     <block_on block="RENEW"/>
     <!-- Block patrons who are barred from placing holds. -->
     <block_on block="HOLD"/>
+    <!-- You can block patrons by profile group in two ways:
+
+	 The first is to enter a block_profile tag with a grp
+	 attribute set to the value of the profile group's id, for
+	 example:
+
+	 <block_profile grp="20"/>
+
+	 The second is to enter a block_profile tag with a text value
+	 equal to the name of the profile group, for instance:
+
+	 <block_profile>Local Use Only</block_profile>
+
+	 In this case, the name must match exactly the case, spacing,
+	 and punctuation (if any) of the profile group's name in the
+	 permission.grp_tree table.
+
+	 If you specify both the grp attribute and a text value with a
+	 group name, then the value of the grp tag is used. The text
+	 value will be ignored:
+
+	 <block_profile grp="20">Local Use Only</block_profile>
+
+	 You might want to do this in order to have slightly faster
+	 configuration load times and still have the group name as a
+	 reminder to the person that edits the configuration.
+    -->
   </patrons>
   <!-- You can add custom prompt messages in a <prompts> block.
        
