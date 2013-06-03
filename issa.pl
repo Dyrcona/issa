@@ -84,6 +84,34 @@ if ($bnodes) {
     }
 }
 
+# Patron grp ids (profiles) to block.
+my $barred_grps = [];
+undef($bnodes) if ($bnodes);
+$bnodes = $xpath->find('/issa/patrons/block_profile/@grp');
+if ($bnodes) {
+    if ($bnodes->isa('XML::XPath::NodeSet')) {
+        foreach ($bnodes->get_nodelist) {
+            push(@{$barred_grps}, $_->getData) if ($_->isa('XML::XPath::Node::Attribute'));
+        }
+    } elsif ($bnodes->isa('XML::XPath::Node::Attribute')) {
+        push(@{$barred_grps}, $bnodes->getData);
+    }
+}
+
+# Patron grp names (profiles) to block.
+my $barred_profiles = [];
+undef($bnodes) if ($bnodes);
+$bnodes = $xpath->find('/issa/patrons/block_profile[not(@grp)]');
+if ($bnodes) {
+    if ($bnodes->isa('XML::XPath::NodeSet')) {
+        foreach ($bnodes->get_nodelist) {
+            push(@{$barred_profiles}, $_->string_value()) if ($_->isa('XML::XPath::Node::Element'));
+        }
+    } elsif ($bnodes->isa('XML::XPath::Node::Element')) {
+        push(@{$barred_profiles}, $bnodes->string_value());
+    }
+}
+
 # Setup our SIGALRM handler.
 $SIG{'ALRM'} = \&logout;
 
@@ -174,6 +202,9 @@ if (defined($session{authtoken})) {
                         }
                     }
                     print("\n") unless ($patron_ok);
+                } elsif (profile_barred($patron->profile)) {
+                    print(" Barred\n");
+                    $patron_ok = 0;
                 } elsif ($patron->juvenile eq 't') {
                     print(" Juvenile\n");
                     # We lie, just to keep Active from also printing.
@@ -637,9 +668,41 @@ sub flesh_user {
     my ($id) = @_;
     my $response = OpenSRF::AppSession->create('open-ils.actor')
         ->request('open-ils.actor.user.fleshed.retrieve', $session{'authtoken'}, $id,
-                   [ 'card', 'cards', 'standing_penalties', 'home_ou' ])
+                   [ 'card', 'cards', 'standing_penalties', 'home_ou', 'profile' ])
         ->gather(1);
     return $response;
+}
+
+# Check if a patron's profile is configured as barred.
+# Arguments
+# Fleshed actor.usr.profile
+#
+# Returns
+# 1 if the profile is barred, 0 otherwise
+sub profile_barred {
+    my ($profile) = @_;
+    my $barred = 0;
+
+    # Check if we got a profile.
+    return 1 unless($profile); # Assume patron without a profile is bad.
+
+    foreach (@{$barred_grps}) {
+        if ($_ == $profile->id) {
+            $barred = 1;
+            last;
+        }
+    }
+
+    unless ($barred) {
+        foreach (@{$barred_profiles}) {
+            if ($_ eq $profile->name) {
+                $barred = 1;
+                last;
+            }
+        }
+    }
+
+    return $barred;
 }
 
 # Place a hold for a patron.
